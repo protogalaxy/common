@@ -25,7 +25,10 @@ func NewErrorResponseFilter() saola.Filter {
 					Err     string `json:"error,omitempty"`
 				}{
 					er.Message,
-					er.Err.Error(),
+					"",
+				}
+				if er.Err != nil {
+					result.Err = er.Err.Error()
 				}
 				encodeError := encoder.Encode(&result)
 				if encodeError != nil {
@@ -44,7 +47,11 @@ func NewErrorLoggerFilter() saola.Filter {
 		err := s.Do(ctx)
 		if err != nil {
 			if er, ok := err.(ErrorResponse); ok {
-				glog.Errorf("Service error: %s error=%s", er.Message, er.Err)
+				if er.Err != nil {
+					glog.Errorf("Service error: %s error=%s", er.Message, er.Err)
+				} else {
+					glog.Errorf("Service error: %s", er.Message)
+				}
 			} else {
 				glog.Errorf("Generic service error error=%s", err)
 			}
